@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_bank_transaction_list" model="ir.ui.view">
+        <field name="name">bank.transaction.list</field>
+        <field name="model">bank.transaction</field>
+        <field name="arch" type="xml">
+            <list string="Transactions" decoration-danger="state=='flagged'" decoration-muted="state=='processed'">
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="amount"/>
+                <field name="currency_id" optional="hide"/>
+                <field name="transaction_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_bank_transaction_form" model="ir.ui.view">
+        <field name="name">bank.transaction.form</field>
+        <field name="model">bank.transaction</field>
+        <field name="arch" type="xml">
+            <form string="Bank Transaction">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,processed,flagged"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="customer_id"/>
+                        <field name="amount"/>
+                        <field name="currency_id"/>
+                        <field name="transaction_date"/>
+                    </group>
+                    <group string="Flag Details" attrs="{'invisible': [('state', '!=', 'flagged')]}">
+                        <field name="flag_reason" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_bank_transaction_search" model="ir.ui.view">
+        <field name="name">bank.transaction.search</field>
+        <field name="model">bank.transaction</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="customer_id"/>
+                <filter name="pending" string="Pending" domain="[('state','=','pending')]"/>
+                <filter name="flagged" string="Flagged" domain="[('state','=','flagged')]"/>
+                <filter name="processed" string="Processed" domain="[('state','=','processed')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_customer" string="Customer" context="{'group_by': 'customer_id'}"/>
+                    <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_bank_transaction" model="ir.actions.act_window">
+        <field name="name">Bank Transactions</field>
+        <field name="res_model">bank.transaction</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_bank_transaction_search"/>
+        <field name="context">{'search_default_pending': 1}</field>
+    </record>
+
+    <menuitem id="menu_bank_monitoring_root" name="Transaction Monitoring" sequence="50"/>
+    <menuitem id="menu_bank_transaction" name="Transactions"
+              parent="menu_bank_monitoring_root"
+              action="action_bank_transaction"/>
+
+</odoo>

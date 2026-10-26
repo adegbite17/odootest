@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="seq_bank_transaction" model="ir.sequence">
+            <field name="name">Bank Transaction</field>
+            <field name="code">bank.transaction</field>
+            <field name="prefix">TXN/%(year)s/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="cron_process_bank_transactions" model="ir.cron">
+            <field name="name">Bank Transaction: Process Pending</field>
+            <field name="model_id" ref="model_bank_transaction"/>
+            <field name="state">code</field>
+            <field name="code">model.process_transactions()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+        </record>
+
+    </data>
+</odoo>
