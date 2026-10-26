@@ -32,7 +32,7 @@
                         <field name="currency_id"/>
                         <field name="transaction_date"/>
                     </group>
-                    <group string="Flag Details" attrs="{'invisible': [('state', '!=', 'flagged')]}">
+                    <group string="Flag Details" invisible="state != 'flagged'">
                         <field name="flag_reason" readonly="1"/>
                     </group>
                 </sheet>

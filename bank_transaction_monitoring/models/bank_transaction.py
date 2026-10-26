@@ -1,17 +1,11 @@
 from odoo import models, fields, api
-from odoo.exceptions import UserError
 from datetime import timedelta
 import logging
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-
 
 _logger = logging.getLogger(__name__)
 
-LARGE_AMOUNT_THRESHOLD = os.getenv("LARGE_AMOUNT_THRESHOLD")
-RAPID_TX_LIMIT = os.getenv("RAPID_TX_LIMIT")
+LARGE_AMOUNT_THRESHOLD = 10_000_000
+RAPID_TX_LIMIT = 5
 RAPID_TX_WINDOW = 10
 
 

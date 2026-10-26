@@ -1,6 +1,6 @@
 # Bank Transaction Monitoring — Odoo 18 Module
 
-An Odoo module that automates bank transaction monitoring for compliance by running periodic background checks to flag suspicious activity.
+An Odoo 18 module that automates bank transaction monitoring for compliance by running periodic background checks to flag suspicious activity.
 
 ---
 
@@ -11,6 +11,7 @@ An Odoo module that automates bank transaction monitoring for compliance by runn
 - Processes normal transactions automatically via a scheduled cron job
 - Prevents duplicate processing using state-based transaction lifecycle
 - Handles errors per transaction without aborting the entire batch
+- Auto-generates transaction references using Odoo sequences (`TXN/YYYY/XXXXX`)
 
 ---
 
@@ -43,7 +44,7 @@ bank_transaction_monitoring/
 
 1. Clone the repository into your custom addons folder:
    ```bash
-   git clone https://github.com/....
+   git clone https://github.com/<your-username>/<your-repo>.git
    ```
 
 2. Add the project path to `addons_path` in `odoo.conf`:
@@ -51,13 +52,13 @@ bank_transaction_monitoring/
    addons_path = c:\program files\odoo 18.0.20261026\server\odoo\addons,c:\path\to\NewProject
    ```
 
-3. Restart the Odoo service.
+3. Restart the Odoo service via `services.msc` → find `odoo-server-18.0` → Restart.
 
 4. In Odoo, go to **Settings → Activate Developer Mode**.
 
 5. Go to **Apps → Update Apps List**.
 
-6. Search for `Bank Transaction Monitoring` and click **Install**.
+6. In the Apps search bar, **remove the "Apps" filter**, search `Bank Transaction Monitoring` and click **Install**.
 
 ---
 
@@ -106,10 +107,14 @@ The `state` field acts as a processing lock. Once a transaction moves out of `pe
 - `index=True` is set on `customer_id`, `transaction_date`, and `state` to speed up cron queries on large datasets.
 
 **Error isolation**
-Each transaction is processed inside a `try/except` block so a single bad record never aborts the entire batch. Errors are logged with full tracebacks via Python's `logging` module.
+Each transaction is wrapped in a `try/except` block so a single bad record never aborts the entire batch. Errors are logged with full tracebacks via Python's `logging` module.
 
 **Flag reason transparency**
-When a transaction is flagged, the specific reason(s) are written to the `flag_reason` field so compliance officers can see exactly why it was flagged.
+When a transaction is flagged, the specific reason(s) are written to the `flag_reason` field so compliance officers can see exactly why it was flagged. A transaction can be flagged for both reasons simultaneously.
+
+**Odoo 18 compatibility**
+- Uses the new inline `invisible` attribute instead of the deprecated `attrs` syntax removed in Odoo 17+
+- Removed `numbercall` field from `ir.cron` which no longer exists in Odoo 18
 
 ---
 
@@ -125,10 +130,19 @@ When a transaction is flagged, the specific reason(s) are written to the `flag_r
 ## Usage
 
 1. Navigate to **Transaction Monitoring → Transactions**
-2. Create a new transaction with a customer, amount, and date
+2. Click **New**, fill in Customer, Amount, and Transaction Date → **Save**
 3. The cron job will automatically process it within 1 minute
 4. Flagged transactions appear highlighted in red in the list view
-5. Open a flagged transaction to see the `Flag Reason` detail
+5. Open a flagged transaction to see the **Flag Reason** detail
+
+### Test Cases
+
+| Scenario | Amount | Expected Result |
+|---|---|---|
+| Large amount | ₦15,000,000 | Flagged — amount threshold |
+| Normal transaction | ₦500,000 | Processed |
+| Rapid transactions | Any — 6+ within 10 mins | Flagged — rapid activity |
+| Both conditions | ₦15,000,000 + rapid | Flagged — both reasons listed |
 
 ---
 
